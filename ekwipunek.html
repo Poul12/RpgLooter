@@ -1,0 +1,685 @@
+<!DOCTYPE html><html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ekwipunek</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: white;
+      padding: 1px;
+      text-align: center;
+      padding-top: 60px; /* aby treść nie nachodziła na pasek */
+    }
+  
+.stats-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: #222;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+    .menu-buttons {
+      margin: 5px 0 10px;
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+    }
+    .menu-buttons button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+   .inventory-wrapper {
+      border: 4px solid #444;
+      border-radius: 12px;
+      padding: 0px;
+      margin-top: 10px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+  /*  .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+    }*/
+  
+.inventory-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 10px;
+  flex-wrap: nowrap;
+  background-color: rgba(0,0,0,0.1);
+  margin: 10px;
+}
+.inventory-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.inventory-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+  
+.item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  border: 1px solid #555;
+  padding: 6px;
+  border-radius: 8px;
+  background-color: #222;
+  color: white;
+  font-size: 15px;
+}
+.item .item-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.item .item-class {
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+.item .item-stats {
+  flex-grow: 1;
+}
+  .item-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #aaa;
+}
+  
+.item .item-content {
+  flex-grow: 1;
+}
+.item .item-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.item.highlight {
+  border: 3px solid white; /* złoty */
+  box-shadow: inset 0 0 6px rgba(255, 215, 0, 0.3), 0 0 8px rgba(255, 215, 0, 0.5);
+  transition: all 0.3s ease;
+  border-radius: 6px;
+}
+  
+    .common { border: 2px solid gray; background-color: #3d3d3d; }
+    .rare { border: 2px solid #1e90ff; background-color: #001e3c; }
+    .unique { border: 2px solid gold; background-color: #3a2e00; }
+    .epic { border: 2px solid violet; background-color: #2e003a; }
+    .legendary { border: 2px solid orange; background-color: #4a2e00; }
+    .item-buttons button {
+      display: block;
+      width: 90%;
+      margin: 4px auto;
+      padding: 4px;
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #666;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .item-buttons button:hover {
+      background-color: #444;
+    }
+    .item-value {
+      margin-top: 6px;
+      font-size: 0.9em;
+      color: gold;
+      font-size: 12px
+    }
+    .filters {
+      margin-bottom: 10px;
+    }
+    .filters select {
+      padding: 4px;
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #666;
+    }
+    #comparison-slot {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px auto;
+      padding: 10px;
+      border: 2px dashed #666;
+      border-radius: 8px;
+      max-width: 600px;
+      min-height: 60px;
+    }
+
+  .item-button{
+  background: linear-gradient(145deg, #2f2f2f, #1c1c1c);
+  color: #ddd;
+  border: 2px ridge #aaa;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 2px #000;
+  }
+
+ .stat-block {
+  display: flex;
+  align-items: flex-end;  /* wyrównaj do dołu */
+  gap: 6px;
+  min-width: 30px;
+  padding: 2px 4px;
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 18px;
+  margin-bottom: 25px;
+}
+
+.stat-main {
+  font-weight: bold;
+  font-size: 16px;
+  display: inline-block;
+  min-width: 40px;
+}
+  
+@keyframes statFade {
+  0% { opacity: 0; transform: translateY(-4px); }
+  50% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(4px); }
+}
+
+/*.stat-diff {
+  font-size: 12px;
+  margin-left: 4px;
+  opacity: 0;
+  animation: none;
+  transition: opacity 0.3s ease;
+  display: inline-block;
+  min-width: 36px;
+}*/
+
+.stat-change-up-fade {
+  color: #00ff88; 
+  animation: statFade 2.0s ease;
+}
+
+.stat-change-down-fade {
+  color: #ff5555;
+  animation: statFade 2.0s ease;
+}
+   
+  
+.stat-diff {
+  font-size: 13px;
+  height: 16px;             
+  display: inline-block;
+  line-height: 1;
+  vertical-align: bottom;
+}
+
+.stat-change-up {
+  color: #00ff88 !important;
+}
+
+.stat-change-down {
+  color: #ff5555 !important;
+}
+  
+  .stat-preview {
+  font-style: italic;
+  opacity: 1;
+  animation: none !important;
+}
+  
+</style>
+</head>
+<body>
+  
+ <div class="stats-bar">
+  <div class="stat-block">
+   <div class="stat-icon">❤️ 
+     <span id="hp" class="stat-main">100</span>
+     <span id="hp-diff-preview" class="stat-diff stat-preview"></span> <!-- poglądowy -->
+     <span id="hp-diff" class="stat-diff"></span> <!-- tymczasowy -->                      
+   </div>
+  </div>
+  <div class="stat-block">
+   <div class="stat-icon">🗡️ 
+    <span id="dmg" class="stat-main">0</span>
+    <span id="dmg-diff-preview" class="stat-diff stat-preview"></span>
+    <span id="dmg-diff" class="stat-diff"></span>
+   </div>
+  </div>
+  <div class="stat-block">
+   <div class="stat-icon">🛡️ 
+    <span id="def" class="stat-main">0</span>
+    <span id="def-diff-preview" class="stat-diff stat-preview"></span>
+    <span id="def-diff" class="stat-diff"></span>
+   </div>
+  </div>
+  <div class="stat-block">
+   <div class="stat-icon">💰 
+    <span id="gold" class="stat-main">0</span>
+    <span id="gold-diff-preview" class="stat-diff stat-preview"></span>
+    <span id="gold-diff" class="stat-diff"></span>
+   </div>
+  </div>
+ </div>
+  
+  <div class="menu-buttons">
+    <button onclick="window.location.href='index.html'">Generuj przedmiot</button>
+    <button onclick="window.location.href='postac.html'">Postać</button>
+  </div>
+  <h2>Ekwipunek</h2>
+  <div class="filters">
+    <label for="typeFilter">Filtruj typ:</label>
+    <select id="typeFilter" onchange="renderInventory()">
+      <option value="">Wszystkie</option>
+      <option value="Broń">Broń</option>
+      <option value="Zbroja">Zbroja</option>
+      <option value="Rękawice">Rękawice</option>
+      <option value="Naramiennik">Naramiennik</option>
+      <option value="Karwasze">Karwasze</option>
+      <option value="Pas">Pas</option>
+      <option value="Spodnie">Spodnie</option>
+      <option value="Buty">Buty</option>
+      <option value="Tarcza">Tarcza</option>
+    </select>
+    <br>
+    <label for="classSort">Filtruj klasę:</label>
+    <select id="classSort" onchange="renderInventory()">
+      <option value="">Domyślnie</option>
+      <option value="common">Zwykłe</option>
+      <option value="rare">Magiczne</option>
+      <option value="unique">Unikalne</option>
+      <option value="epic">Epickie</option>
+      <option value="legendary">Legendarne</option>
+    </select>
+  </div>  <div id="comparison-slot"></div>
+  <div>Przedmioty: <span id="count">0</span>/30</div>
+  <div class="inventory-wrapper">
+     <div class="inventory-scroll" id="inventory-container">
+  <!-- Przedmioty będą tutaj wstawiane dynamicznie -->
+     </div>
+  </div>
+   <script>
+    
+  const klasyPolskie = {
+    common: "Zwykłe",
+    rare: "Magiczne",
+    unique: "Unikalne",
+    epic: "Epickie",
+    legendary: "Legendarne"
+  };
+
+  let inventory = JSON.parse(localStorage.getItem("inventory") || "[]");
+  let activeFilter = false;
+
+  function renderInventory() {
+    const container = document.getElementById("inventory-container");
+    container.innerHTML = "";
+
+    const typeFilter = document.getElementById("typeFilter").value;
+    const classSort = document.getElementById("classSort").value;
+
+    let items = [...inventory];
+    activeFilter = false;
+    if (typeFilter || classSort) {
+      activeFilter = true;
+      if (!window.justCompared) {
+        localStorage.removeItem("compareItem");
+        document.getElementById("comparison-slot").innerHTML = "";
+      }
+    }
+    window.justCompared = false;
+
+    if (typeFilter) items = items.filter(item => item.typ === typeFilter);
+    if (classSort) items = items.filter(item => item.klasa === classSort);
+
+    document.getElementById("count").textContent = inventory.length;
+
+    items.forEach((item, index) => {
+      const globalIndex = inventory.findIndex(i => i === item);
+      const div = document.createElement("div");
+      div.className = `item ${item.klasa}`;
+      div.innerHTML = `
+        <strong>${item.nazwa}</strong>
+        <span class="item-class">(${klasyPolskie[item.klasa] || item.klasa})</span>
+        ${item.statystyki.map(s => `${s.nazwa}: ${s.wartosc}`).join("<br>")}  
+        <div class="item-footer">
+          <span>${item.typ}</span>
+          <span class="item-value">💰 ${item.wartosc || 0}</span>
+       </div>
+       <div class="item-actions">
+          <button class="item-button" onclick="equipItem(${globalIndex})">Załóż</button>
+          <button class="item-button" onclick="compareItem(${globalIndex})">Porównaj</button>
+          <button class="item-button" onclick="sellItem(${globalIndex})">Sprzedaj</button>
+        </div>
+        `;
+      container.appendChild(div);
+    });
+
+   /* const compared = JSON.parse(localStorage.getItem("compareItem") || "null");
+    if (compared) {
+      const char = JSON.parse(localStorage.getItem("character") || '{"equipment":{}}');
+      const equipped = char.equipment?.[compared.typ];
+      const slot = document.getElementById("comparison-slot");
+      const left = `<div class="item ${compared.klasa}" style="flex:1">
+    <strong>${compared.nazwa}</strong><br>
+    ${compared.statystyki.map(s => `${s.nazwa}: ${s.wartosc}`).join("<br>")}
+    <div class="item-buttons">
+      <button class="zaloz" onclick="equipCompared()">Załóż</button>
+      <button class="sprzedaj" onclick="sellCompared()">Sprzedaj</button>
+    </div>
+    <div class="item-value">💰 ${compared.wartosc}</div>
+  </div>
+`;
+      const arrow = `<div style="font-size: 24px; align-self: center;">➡️</div>`;
+      const right = equipped
+        ? `<div class="item ${equipped.klasa}" style="flex:1"><strong>${equipped.nazwa}</strong><br>${equipped.statystyki.map(s => `${s.nazwa}: ${s.wartosc}`).join("<br>")}</div>`
+        : `<div style='flex:1'>Brak założonego przedmiotu tego typu.</div>`;
+      slot.innerHTML = left + arrow + right;
+    }*/
+  }
+  
+  function equipItem(index) {
+    const item = inventory[index];
+    const character = JSON.parse(localStorage.getItem("character") || "{\"equipment\":{}}")
+    character.equipment = character.equipment || {};
+    const current = character.equipment[item.typ];
+    if (current) inventory.push(current);
+    character.equipment[item.typ] = item;
+    inventory.splice(index, 1);
+    localStorage.setItem("character", JSON.stringify(character));
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+    localStorage.removeItem("compareItem");
+    document.getElementById("comparison-slot").innerHTML = `
+    <div style='text-align:center; color: lightgreen; font-weight: bold;'>
+      Założone ✅<br><span style='font-size: 0.9em;'>&nbsp;</span>
+    </div>`;
+    
+    ["hp", "dmg", "def"].forEach(id => {
+  const prev = document.getElementById(`${id}-diff-preview`);
+  if (prev) {
+    prev.textContent = "";
+    prev.className = "stat-diff stat-preview";
+  }
+  });
+    
+    updateStatsBar();
+    renderInventory();
+  }
+  
+  function compareItem(index) {
+  const item = inventory[index];
+  localStorage.setItem("compareItem", JSON.stringify(item));
+  window.justCompared = true;
+
+  document.querySelectorAll(".item").forEach(el => el.classList.remove("highlight"));
+  const container = document.getElementById("inventory-container");
+  const divs = container.getElementsByClassName("item");
+  if (divs[index]) divs[index].classList.add("highlight");
+
+  const char = JSON.parse(localStorage.getItem("character") || '{"equipment":{}}');
+  const equipped = char.equipment?.[item.typ];
+  const slot = document.getElementById("comparison-slot");
+
+  if (equipped) {
+    const stats = equipped.statystyki.map(s => `<div>${s.nazwa}: ${s.wartosc}</div>`).join("");
+    slot.innerHTML = `
+      <div class="item ${equipped.klasa}">
+        <div class="item-title">${equipped.nazwa}</div>
+        <div class="item-class">(${translateClass(equipped.klasa)})</div>
+        <div class="item-stats">${stats}</div>
+        <div class="item-footer">
+          <span>${equipped.typ}</span>
+          <span class="item-value">💰 ${equipped.wartosc || 0}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    slot.innerHTML = `<div style='flex:1; text-align:center;'>Brak założonego przedmiotu tego typu.</div>`;
+  }
+
+  diffStats(item); // ← nowa linia
+  window.scrollTo({ top: slot.offsetTop - 20, behavior: 'smooth' });
+}
+  
+  
+  function diffStats(nowy) {
+  const char = JSON.parse(localStorage.getItem("character") || '{}');
+  const base = { Zycie: 100, Obrazenia: 5, Pancerz: 5, Szybkosc: 1, Sila: 0, Zrecznosc: 0, Witalnosc: 0 };
+  let wzmocnienie = 0;
+
+  if (char.equipment) {
+    for (const slot in char.equipment) {
+      const item = char.equipment[slot];
+      if (!item?.statystyki || slot === nowy.typ) continue;
+      item.statystyki.forEach(stat => {
+        if (base.hasOwnProperty(stat.nazwa)) base[stat.nazwa] += parseFloat(stat.wartosc);
+        if (stat.nazwa === "Wzmocnienie Obrażeń (%)") wzmocnienie += parseFloat(stat.wartosc);
+        if (stat.nazwa.startsWith("Dodatkowe obrażenia od")) base.Obrazenia += parseFloat(stat.wartosc);
+        if (stat.nazwa === "Zwiększenie życia") base.Zycie += parseFloat(stat.wartosc);
+        if (stat.nazwa === "Szybkosc") base.Szybkosc = parseFloat(stat.wartosc);
+      });
+    }
+  }
+
+  if (nowy?.statystyki) {
+    nowy.statystyki.forEach(stat => {
+      if (base.hasOwnProperty(stat.nazwa)) base[stat.nazwa] += parseFloat(stat.wartosc);
+      if (stat.nazwa === "Wzmocnienie Obrażeń (%)") wzmocnienie += parseFloat(stat.wartosc);
+      if (stat.nazwa.startsWith("Dodatkowe obrażenia od")) base.Obrazenia += parseFloat(stat.wartosc);
+      if (stat.nazwa === "Zwiększenie życia") base.Zycie += parseFloat(stat.wartosc);
+      if (stat.nazwa === "Szybkosc") base.Szybkosc = parseFloat(stat.wartosc);
+    });
+  }
+
+  const newLife = Math.round(base.Zycie + base.Witalnosc * 5);
+  const newDmg = ((base.Obrazenia + base.Sila * 3) * (1 + wzmocnienie / 100) * base.Szybkosc).toFixed(1);
+  const newDef = base.Pancerz + base.Zrecznosc * 4;
+
+  diffPreview("hp", newLife);
+  diffPreview("dmg", newDmg);
+  diffPreview("def", newDef);
+}
+  
+  
+ /* function onlyDiff(id, newVal) {
+  const el = document.getElementById(id);
+  const diffEl = document.getElementById(`${id}-diff`);
+  if (!el || !diffEl) return;
+
+  const current = parseFloat(el.textContent);
+  const diff = newVal - current;
+
+  if (diff > 0) {
+    diffEl.textContent = `(+${diff.toFixed(1)})`;
+    diffEl.className = "stat-diff stat-change-up";
+  } else if (diff < 0) {
+    diffEl.textContent = `(${diff.toFixed(1)})`;
+    diffEl.className = "stat-diff stat-change-down";
+  } else {
+    diffEl.textContent = "";
+    diffEl.className = "stat-diff";
+  }
+}*/
+  
+  function diffPreview(id, newVal) {
+  const el = document.getElementById(id);
+  const diffEl = document.getElementById(`${id}-diff-preview`);
+  if (!el || !diffEl) return;
+
+  const current = parseFloat(el.textContent);
+  const diff = newVal - current;
+
+  if (diff > 0) {
+    diffEl.textContent = `(+${diff.toFixed(1)})`;
+    diffEl.className = "stat-diff stat-preview stat-change-up";
+  } else if (diff < 0) {
+    diffEl.textContent = `(${diff.toFixed(1)})`;
+    diffEl.className = "stat-diff stat-preview stat-change-down";
+  } else {
+    diffEl.textContent = "";
+    diffEl.className = "stat-diff stat-preview";
+  }
+}
+  
+  
+ function translateClass(klasa) {
+  const map = {
+    "common": "Zwykłe",
+    "rare": "Magiczne",
+    "unique": "Unikalne",
+    "epic": "Epickie",
+    "legendary": "Legendarne"
+  };
+  return map[klasa] || klasa;
+}
+  function sellItem(index) {
+    const item = inventory[index];
+    const gold = parseInt(localStorage.getItem("gold") || "0");
+    localStorage.setItem("gold", gold + item.wartosc);
+    inventory.splice(index, 1);
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+    localStorage.removeItem("compareItem");
+    document.getElementById("comparison-slot").innerHTML = `
+    <div style='text-align:center; color: orange; font-weight: bold;'>
+      Sprzedane 💰<br>
+      <span style='font-size: 0.9em;'>+${item.wartosc} zł</span>
+    </div>`;
+    
+    ["hp", "dmg", "def"].forEach(id => {
+  const prev = document.getElementById(`${id}-diff-preview`);
+  if (prev) {
+    prev.textContent = "";
+    prev.className = "stat-diff stat-preview";
+  }
+  });
+    
+    updateStatsBar();
+    renderInventory();
+  }
+  
+
+/*function updateSingleStatValue(id, newVal) {
+  const el = document.getElementById(id);
+  const diffEl = document.getElementById(`${id}-diff`);
+  if (!el || !diffEl) return;
+
+  const prevVal = el.dataset.prev !== undefined ? parseFloat(el.dataset.prev) : newVal;
+  const diff = newVal - prevVal;
+
+  el.textContent = newVal;
+  el.dataset.prev = newVal;
+
+  if (diff > 0) {
+    diffEl.textContent = `+${diff.toFixed(1)}`;
+    diffEl.className = "stat-diff stat-change-up-fade";
+  } else if (diff < 0) {
+    diffEl.textContent = `${diff.toFixed(1)}`;
+    diffEl.className = "stat-diff stat-change-down-fade";
+  } else {
+    diffEl.textContent = "";
+    diffEl.className = "stat-diff";
+  }
+
+  setTimeout(() => {
+    diffEl.textContent = "";
+    diffEl.className = "stat-diff";
+  }, 3000);
+}*/
+
+  
+  window.diffTimers = {}; // globalny obiekt do przechowywania timerów
+
+function updateSingleStatValue(id, newVal) {
+  const el = document.getElementById(id);
+  const diffEl = document.getElementById(`${id}-diff`);
+  if (!el || !diffEl) return;
+
+  const prevVal = el.dataset.prev !== undefined ? parseFloat(el.dataset.prev) : newVal;
+  const diff = newVal - prevVal;
+
+  el.textContent = newVal;
+  el.dataset.prev = newVal;
+
+  if (diff > 0) {
+    diffEl.textContent = `+${diff.toFixed(1)}`;
+    diffEl.className = "stat-diff stat-change-up-fade";
+  } else if (diff < 0) {
+    diffEl.textContent = `${diff.toFixed(1)}`;
+    diffEl.className = "stat-diff stat-change-down-fade";
+  } else {
+    diffEl.textContent = "";
+    diffEl.className = "stat-diff";
+  }
+
+  // ❗ Nowość: zatrzymaj poprzedni timer jeśli istnieje
+  if (window.diffTimers[id]) {
+    clearTimeout(window.diffTimers[id]);
+  }
+
+  // ❗ Nowy timer: resetuj diff po 3s
+  window.diffTimers[id] = setTimeout(() => {
+    diffEl.textContent = "";
+    diffEl.className = "stat-diff";
+    delete window.diffTimers[id]; // wyczyść zapisany timer
+  }, 2000);
+}
+  
+function updateStatsBar() {
+  const char = JSON.parse(localStorage.getItem("character") || '{}');
+  const base = { Zycie: 100, Obrazenia: 5, Pancerz: 5, Szybkosc: 1, Sila: 0, Zrecznosc: 0, Witalnosc: 0 };
+  let bonusDmg = 0;
+
+  if (char.equipment) {
+    for (const slot in char.equipment) {
+      const item = char.equipment[slot];
+      if (!item?.statystyki) continue;
+      item.statystyki.forEach(stat => {
+        if (base.hasOwnProperty(stat.nazwa)) base[stat.nazwa] += parseFloat(stat.wartosc);
+        if (stat.nazwa === "Wzmocnienie Obrażeń (%)") bonusDmg += parseFloat(stat.wartosc);
+        if (stat.nazwa.startsWith("Dodatkowe obrażenia od")) base.Obrazenia += parseFloat(stat.wartosc);
+        if (stat.nazwa === "Zwiększenie życia") base.Zycie += parseFloat(stat.wartosc);
+        if (stat.nazwa === "Szybkosc") base.Szybkosc = parseFloat(stat.wartosc);
+      });
+    }
+  }
+
+  const hp = Math.round(base.Zycie + base.Witalnosc * 5);
+  const dmg = ((base.Obrazenia + base.Sila * 3) * (1 + bonusDmg / 100) * base.Szybkosc).toFixed(1);
+  const def = base.Pancerz + base.Zrecznosc * 4;
+  const gold = localStorage.getItem("gold") || "0";
+
+  updateSingleStatValue("hp", hp);
+  updateSingleStatValue("dmg", dmg);
+  updateSingleStatValue("def", def);
+  updateSingleStatValue("gold", gold);
+}
+  
+  window.onload = () => {
+    localStorage.removeItem("compareItem");
+    updateStatsBar();
+    renderInventory();
+  };
+  
+  </script></body>
+</html>
